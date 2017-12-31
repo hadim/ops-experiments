@@ -55,10 +55,6 @@ public class JavaCPPConvolveOp<I extends RealType<I>, O extends RealType<O> & Na
 			H_ = new FloatPointer(2 * (fftSize[0] * fftSize[1] * fftSize[2]));
 		}
 
-		// Call the MKL wrapper
-		MKLConvolveWrapper.mklConvolve(input, kernel, output, X_, H_, (int) dimensions.dimension(1),
-				(int) dimensions.dimension(0));
-
 		// create FFT plan
 		final fftwf_plan forward1 = fftwf_plan_dft_r2c_2d((int) dimensions.dimension(0), (int) dimensions.dimension(1),
 				input, X_, (int) FFTW_ESTIMATE);

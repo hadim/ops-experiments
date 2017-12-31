@@ -18,15 +18,15 @@ public class InteractiveDeconvolveTest<T extends RealType<T> & NativeType<T>> {
 	final static ImageJ ij = new ImageJ();
 
 	public static <T extends RealType<T> & NativeType<T>> void main(final String[] args) throws IOException {
-
+	
 		String libPathProperty = System.getProperty("java.library.path");
 		System.out.println("Lib path:" + libPathProperty);
 
 		ij.launch(args);
-
-		String inputName = "./images/Bars-G10-P15-stack-cropped.tif";
-		String psfName = "./images/PSF-Bars-stack-cropped.tif";
-
+		
+		String inputName = "../ops-images/deconvolution/CElegans-CY3-crop.tif";         
+		String psfName = "../ops-images/deconvolution/PSF-CElegans-CY3-cropped.tif";
+		
 		@SuppressWarnings("unchecked")
 		Img<T> img = (Img<T>) ij.dataset().open(inputName).getImgPlus().getImg();
 		Img<FloatType> imgF = ij.op().convert().float32(img);
@@ -48,18 +48,26 @@ public class InteractiveDeconvolveTest<T extends RealType<T> & NativeType<T>> {
 				new OutOfBoundsMirrorFactory<>(Boundary.SINGLE));
 
 		ij.ui().show("bars ", img);
+		ij.ui().show("psf ", psf);
 
 		int iterations = 100;
 		int pad = 0;
+		
+		long startTime, endTime;
+		
 
 		// run Ops Richardson Lucy
 
-		long startTime = System.currentTimeMillis();
-
+		startTime = System.currentTimeMillis();
+		
+	//	Img<FloatType> deconvolved = (Img<FloatType>) ij.op().deconvolve().richardsonLucy(imgF, psfF,
+	//			new long[] { pad, pad, pad }, iterations);
+/*		
 		Img<FloatType> deconvolved = (Img<FloatType>) ij.op().deconvolve().richardsonLucy(imgF, psfF,
-				new long[] { pad, pad, pad }, iterations);
+				new long[] { pad, pad, pad }, null, null, null, null ,10, true, true);
+		
 
-		long endTime = System.currentTimeMillis();
+		endTime = System.currentTimeMillis();
 
 		ij.log().info("Total execution time (Ops) is: " + (endTime - startTime));
 
@@ -77,14 +85,14 @@ public class InteractiveDeconvolveTest<T extends RealType<T> & NativeType<T>> {
 		ij.log().info("Total execution time (Cuda) is: " + (endTime - startTime));
 
 		ij.ui().show("cuda op deconvolved", outputCuda);
-
+*/
 		// run MKL Richardson Lucy
 
 		startTime = System.currentTimeMillis();
 
 		// run MKL Richardson Lucy op
 		RandomAccessibleInterval<FloatType> outputMKL = (RandomAccessibleInterval<FloatType>) ij.op()
-				.run(MKLRichardsonLucyOp.class, imgF, psfF, new long[] { pad, pad, pad }, iterations);
+				.run(MKLRichardsonLucyOp.class, imgF, psfF, new long[] { pad, pad, pad }, null, null, null, iterations, true);
 
 		endTime = System.currentTimeMillis();
 

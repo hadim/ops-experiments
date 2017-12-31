@@ -21,6 +21,8 @@ import net.imglib2.view.Views;
 
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.Pointer;
+import org.scijava.plugin.Parameter;
+import org.scijava.ui.UIService;
 
 /**
  * Abstract class for Native FFT filters based on the JavaCpp framework
@@ -34,7 +36,7 @@ import org.bytedeco.javacpp.Pointer;
  */
 public abstract class AbstractNativeFFTFilterF<I extends RealType<I>, O extends RealType<O> & NativeType<O>, K extends RealType<K>, C extends ComplexType<C> & NativeType<C>>
 		extends AbstractFilterF<I, O, K, C> {
-
+	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void initialize() {
@@ -91,16 +93,35 @@ public abstract class AbstractNativeFFTFilterF<I extends RealType<I>, O extends 
 			return;
 		}
 
+		// compute convolution interval
+		final long[] start = new long[input.numDimensions()];
+		final long[] end = new long[input.numDimensions()];
+
+		for (int d = 0; d < output.numDimensions(); d++) {
+			long offset = (input.dimension(d) - output.dimension(d)) / 2;
+			start[d] = offset;
+			end[d] = start[d] + output.dimension(d) - 1;
+		}
+		
+		Interval convolutionInterval=new FinalInterval(start, end);
+		
+		Img<I> mask=(Img<I>)ops().create().img(input);
+		RandomAccessibleInterval<I> temp=Views.interval(Views.zeroMin(mask), convolutionInterval);
+		
+		for (I i:Views.iterable(temp)) {
+			i.setOne();
+		}
+		
 		final long startTime = System.currentTimeMillis();
 
-		runNativeFilter(input, fpInput, fpKernel, fpOutput);
+		runNativeFilter(input, output, fpInput, fpKernel, fpOutput);
 
 		final long endTime = System.currentTimeMillis();
-		
-		int imageSize=1;
-		
-		for (int d=0;d<input.numDimensions();d++) {
-			imageSize*=input.dimension(d);
+
+		int imageSize = 1;
+
+		for (int d = 0; d < input.numDimensions(); d++) {
+			imageSize *= input.dimension(d);
 		}
 
 		// copy output to array
@@ -111,25 +132,14 @@ public abstract class AbstractNativeFFTFilterF<I extends RealType<I>, O extends 
 		Pointer.free(fpKernel);
 		Pointer.free(fpOutput);
 
-		long[] imgSize=null;
-		
-		if (input.numDimensions()==2) {
-			imgSize = new long[] { input.dimension(0), input.dimension(1)};
-		}
-		else {
+		long[] imgSize = null;
+
+		if (input.numDimensions() == 2) {
+			imgSize = new long[] { input.dimension(0), input.dimension(1) };
+		} else {
 			imgSize = new long[] { input.dimension(0), input.dimension(1), input.dimension(2) };
 		}
 		Img<FloatType> outPadded = ArrayImgs.floats(arrayOutput, imgSize);
-
-		// compute unpad interval
-		final long[] start = new long[outPadded.numDimensions()];
-		final long[] end = new long[outPadded.numDimensions()];
-
-		for (int d = 0; d < output.numDimensions(); d++) {
-			long offset = (input.dimension(d) - output.dimension(d)) / 2;
-			start[d] = offset;
-			end[d] = start[d] + output.dimension(d) - 1;
-		}
 
 		// -- copy (crop) padded back to original size
 		output = (RandomAccessibleInterval<O>) ops().run(Ops.Copy.RAI.class, output,
@@ -139,7 +149,7 @@ public abstract class AbstractNativeFFTFilterF<I extends RealType<I>, O extends 
 
 	protected abstract void loadNativeLibraries();
 
-	protected abstract void runNativeFilter(Interval dimensions, FloatPointer input, FloatPointer kernel,
+	protected abstract void runNativeFilter(Interval inputDimensions, Interval outputDimensions, FloatPointer input, FloatPointer kernel,
 			FloatPointer output);
 
 }

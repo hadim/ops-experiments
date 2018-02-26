@@ -42,6 +42,7 @@ psf = ops.create().kernelDiffraction(psfSize, numericalAperture, wavelength,
 				riSample, riImmersion, xySpacing, zSpacing, depth, new FloatType());
 
 startTime = System.currentTimeMillis();
+
 deconvolved=ops.run(YacuDecuRichardsonLucyOp.class, imgF, psf, borderSize, numIterations);
 //deconvolved=ops.run(MKLRichardsonLucyOp.class, imgF, psf, borderSize, numIterations);
 

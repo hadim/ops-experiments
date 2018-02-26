@@ -15,4 +15,6 @@ link_directories(${MKL_LIBRARY_DIR} ${OMP_LIBRARY_DIR}/)
 
 add_library(MKLFFTW source/MKLFFTW.cpp)
 
-target_link_libraries(MKLFFTW mkl_core mkl_intel_lp64 mkl_intel_thread mkl_tbb_thread mkl_rt libiomp5md.lib) 
+set_property(TARGET MKLFFTW PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+target_link_libraries(MKLFFTW mkl_intel_lp64 mkl_intel_thread mkl_core mkl_avx2 mkl_def iomp5) 

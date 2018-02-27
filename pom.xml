@@ -174,11 +174,39 @@
 							<executable>bash</executable>
 							<commandlineArgs>${project.basedir}/native/cppbuild.sh</commandlineArgs>
 							<workingDirectory>${project.basedir}/native</workingDirectory>
-							<classOrPackageName>org.bytedeco.javacpp.presets.*</classOrPackageName>
+							<classOrPackageName>org.hadim.*</classOrPackageName>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>${javacpp.platform}${javacpp.platform.extension}</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>${javacpp.platform}${javacpp.platform.extension}</classifier>
+							<skipIfEmpty>true</skipIfEmpty>
+							<includes>
+								<include>${javacpp.platform.library.path}/</include>
+								<include>org/bytedeco/javacpp/${javacpp.platform}${javacpp.platform.extension}/</include>
+								<include>org/hadim/*</include>
+							</includes>
+							<excludes>
+								<exclude>org/bytedeco/javacpp/windows-*/*.exp</exclude>
+								<exclude>org/bytedeco/javacpp/windows-*/*.lib</exclude>
+								<exclude>org/bytedeco/javacpp/windows-*/*.obj</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

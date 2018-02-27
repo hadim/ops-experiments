@@ -22,3 +22,4 @@ cppbuild/
 *.dll
 *.a
 .classpath
+lib/

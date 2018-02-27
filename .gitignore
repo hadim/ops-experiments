@@ -16,3 +16,9 @@
 *.dll
 *.lib
 *.obj
+
+cppbuild/
+*.so
+*.dll
+*.a
+.classpath

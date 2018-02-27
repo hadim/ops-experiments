@@ -159,6 +159,17 @@
 	</dependencies>
 
 	<build>
+
+		<!-- Detect platform: ${os.detected.classifier} -->
+		<extensions>
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.5.0.Final</version>
+			</extension>
+		</extensions>
+
+		<!-- Execute cppbuild.sh to build libraries -->
 		<plugins>
 			<plugin>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -174,34 +185,26 @@
 							<executable>bash</executable>
 							<commandlineArgs>${project.basedir}/native/cppbuild.sh</commandlineArgs>
 							<workingDirectory>${project.basedir}/native</workingDirectory>
-							<classOrPackageName>org.hadim.*</classOrPackageName>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 
+			<!-- Copy native libraries to package -->
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>${javacpp.platform}${javacpp.platform.extension}</id>
+						<id>${os.detected.classifier}</id>
 						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
 						<configuration>
-							<classifier>${javacpp.platform}${javacpp.platform.extension}</classifier>
-							<skipIfEmpty>true</skipIfEmpty>
+							<classifier>${os.detected.classifier}</classifier>
 							<includes>
-								<include>${javacpp.platform.library.path}/</include>
-								<include>org/bytedeco/javacpp/${javacpp.platform}${javacpp.platform.extension}/</include>
-								<include>org/hadim/*</include>
+								<include>${project.basedir}/native/lib/</include>
 							</includes>
-							<excludes>
-								<exclude>org/bytedeco/javacpp/windows-*/*.exp</exclude>
-								<exclude>org/bytedeco/javacpp/windows-*/*.lib</exclude>
-								<exclude>org/bytedeco/javacpp/windows-*/*.obj</exclude>
-							</excludes>
 						</configuration>
 					</execution>
 				</executions>

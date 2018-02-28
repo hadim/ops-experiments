@@ -190,7 +190,7 @@
 				</executions>
 			</plugin>
 
-			<!-- Copy native libraries to package -->
+			<!-- Copy native libraries to a platform-specific package (an JAR additional package) -->
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
